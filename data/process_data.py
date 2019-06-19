@@ -1,21 +1,117 @@
+#import libraries
 import sys
+import pandas as pd
+from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    """
+    Make a combined pandas dataframe from messages and categories CSVs
+
+    Parameters:
+    messages_filepath (str): Filepath for the messages CSV
+    categories_filepath (str): Filepath for the categories CSV
+
+    Returns:
+    df (pandas dataframe): combined pandas dataframe from messages and categories CSVs
+    """
+    
+    #Read messages CSV
+    messages = pd.read_csv(messages_filepath)
+    
+    #Read categories CSV
+    categories = pd.read_csv(categories_filepath)
+    
+    #Merge messages and categories
+    df = pd.merge(messages, categories, on="id")
+    
+    #return merged dataframe
+    return(df)
 
 
 def clean_data(df):
-    pass
+    """
+    Clean the dataframe:
+    Create category columns,
+    Identify category flags,
+    Remove duplicates.
 
+    Parameters:
+    df (pandas dataframe): dataframe to be cleaned
+
+    Returns:
+    df (pandas dataframe): cleaned dataframe
+    """
+    
+    #Split categories in to separate columns
+    categories = df["categories"].str.split(pat = ";", expand = True)
+    
+    #Read first category entry
+    row = categories.loc[0]
+    
+    #Get all category names from the first row
+    category_colnames = [element[:element.index("-")] for element in row]
+
+    #Set column names for the categories dataframe
+    categories.columns = category_colnames
+
+    for column in categories:
+        
+        #get the binary flag for each entry in every column
+        categories[column] = categories[column].astype(str).str[-1]
+        
+        #convert binary flag to integer
+        categories[column] = categories[column].astype(int)
+    
+    #drop categories column since we have the individual category data
+    df = df.drop(columns = ["categories"])
+    
+    #concatenate messages and individual category data
+    df = pd.concat([df, categories], axis = 1)
+    
+    #drop duplicate rows
+    df = df.drop_duplicates()
+    
+    #return cleaned dataframe
+    return(df)
+    
 
 def save_data(df, database_filename):
-    pass  
+    """
+    Save dataframe to sqlite database
+
+    Parameters:
+    df (pandas dataframe): dataframe to be saved
+    database_filename (str): destination filepath for database
+
+    Returns:
+    none
+    """
+    
+    #crate sqlite engine
+    engine = create_engine("sqlite:///" + database_filename)
+    
+    #save dataframe to sqlite database
+    df.to_sql('Messages', engine, index=False)
 
 
 def main():
-    if len(sys.argv) == 4:
+    """
+    Reads the messages and categories CSVs,
+    create pandas dataframes,
+    combine dataframes,
+    clean dataframe,
+    save dataframe to sqlite database.
 
+    Parameters:
+    none
+
+    Returns:
+    none
+    """
+    if len(sys.argv) == 4:
+        
+        #get input files and output filepath from user
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'

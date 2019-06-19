@@ -4,7 +4,6 @@ import pandas as pd
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
@@ -15,22 +14,38 @@ from sqlalchemy import create_engine
 app = Flask(__name__)
 
 def tokenize(text):
+    """
+    Tokenizer function for CountVectorizer
+    Normalize, lemmatize, and tokenize text
+
+    Parameters:
+    text (str): text to be tokenized
+
+    Returns:
+    clean_tokens (list): Clean tokens in the text    
+    """
+    
+    #tokenize the text
     tokens = word_tokenize(text)
+    
+    #instantiate lemmatizer
     lemmatizer = WordNetLemmatizer()
 
     clean_tokens = []
     for tok in tokens:
+        #normalize and lemmatize tokens
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
-
+    
+    #return normalized, lemmatized, and tokenizd text
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('Messages', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -42,6 +57,10 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    
+    Y = df.drop(columns = ["id", "message", "original", "genre"])
+    category_counts = Y.sum()
+    category_names = list(Y.columns.values)
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -61,6 +80,28 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                     x=category_names,
+                     y=category_counts,
+                     marker=dict(
+                     color='rgb(255,0,0)',
+                     line=dict(
+                     color='rgb(245,48,107)',
+                   )
+                ), opacity=0.6)],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category"
                 }
             }
         }
