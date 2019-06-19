@@ -7,20 +7,21 @@ This project does not require any libraries outside Anaconda. Python 3 was used 
 We classify diaster messages in to 36 different categories using machine learning.
     
 ### File Descriptions:		
-- app
-| - template
-| |- master.html  # main page of web app
-| |- go.html  # classification result page of web app
-|- run.py  # Flask file that runs app
+	- app
+	| - template
+	| |- master.html  # main page of web app
+	| |- go.html  # classification result page of web app
+	|- run.py  # Flask file that runs app
 
-- data
-|- disaster_categories.csv  # CSV file with the disaster categories 
-|- disaster_messages.csv  # CSV file with the disaster messages
-|- process_data.py # Python file to run the ETL pipleine. Outputs the DisasterResponse.db file
+	- data
+	|- disaster_categories.csv  # CSV file with the disaster categories 
+	|- disaster_messages.csv  # CSV file with the disaster messages
+	|- process_data.py # Python file to run the ETL pipleine. Outputs the DisasterResponse.db file
 
-- models
-|- train_classifier.py # Python file to run the ML pipeline. Outputs the classifier.pkl file
-|- classifier.pkl  # Pickle file of the trained model
+	- models
+	|- train_classifier.py # Python file to run the ML pipeline. Outputs the classifier.pkl file
+	|- classifier.pkl  # Pickle file of the trained model
+
 
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
